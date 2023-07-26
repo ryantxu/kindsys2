@@ -6,7 +6,7 @@ type ItemType string
 // Defines values for ItemType.
 const (
 	// Deprecated -- will be removed in the future
-	ItemTypeDashboardById  ItemType = "dashboard_by_id"
+	//	ItemTypeDashboardById  ItemType = "dashboard_by_id"
 	ItemTypeDashboardByTag ItemType = "dashboard_by_tag"
 	ItemTypeDashboardByUid ItemType = "dashboard_by_uid"
 )

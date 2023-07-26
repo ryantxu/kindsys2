@@ -9,8 +9,8 @@ type KindInfo struct {
 	// Organization controlled prefix
 	Group string `json:"group"`
 
-	// Must be unique within the group (used as k8s "kind" name)
-	Name string `json:"name"`
+	// Must be unique within the group
+	Kind string `json:"kind"`
 
 	// Description of the purpose of this kind
 	Description string `json:"description"`

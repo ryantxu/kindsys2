@@ -1,8 +1,8 @@
 {
   "group": "ext.playlists.grafana.com",
-  "name": "Playlist",
+  "kind": "Playlist",
   "description": "Describes a set of dashboards that should be displayed in a loop",
-  "maturity": "",
+  "maturity": "experimental",
   "machineName": {
     "plural": "playlists",
     "singular": "playlist"
@@ -22,7 +22,7 @@
       ]
     },
     {
-      "version": "v1.0-alpha",
+      "version": "v1.0-dev",
       "software": "v10.5",
       "changelog": [
         "removed the dashboard_by_id type",
