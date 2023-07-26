@@ -47,3 +47,9 @@ type Spec struct {
 	// creator of the playlist of by the application.
 	Uid string `json:"uid"`
 }
+
+//----
+
+type PlaylistResource struct {
+	// ????
+}
