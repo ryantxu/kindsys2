@@ -1,41 +1,8 @@
 package kindsys2
 
 import (
-	"context"
 	"time"
 )
-
-// This will be used for app-sdk controllers
-type ResourceController[R Resource] interface {
-	OnAdd(ctx context.Context, obj *R) error
-	OnUpdate(ctx context.Context, oldObj *R, newObj *R) error
-	OnDelete(ctx context.Context, obj *R) error
-}
-
-type MachineNames struct {
-	// This is used in k8s URLs
-	Plural string `json:"plural,omitempty"`
-
-	// Used as an alias in the display
-	Singular string `json:"singular,omitempty"`
-
-	// Optional shorter names that can be matched in a CLI
-	Short []string `json:"short,omitempty"`
-}
-
-type ResourceKind interface {
-	Kind
-
-	// K8S style machine names for this kind
-	GetMachineNames() MachineNames
-
-	// Check that a given instance is valid
-	// note the resource self identifies the version
-	Validate(obj Resource) error
-
-	// Migrate from one object to another version
-	Migrate(obj Resource, targetVersion string) (Resource, error)
-}
 
 // A Resource is a single instance of a Grafana Resource kind
 //

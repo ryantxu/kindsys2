@@ -5,15 +5,27 @@ import (
 	"fmt"
 	"kindsys2"
 	"kindsys2/example/playlist"
+	"kindsys2/example/playlist/schemas"
+	"kindsys2/jsks"
 	"testing"
 	"time"
 
 	"github.com/invopop/jsonschema"
+	"github.com/stretchr/testify/require"
 )
 
 func TestJSONSchema(t *testing.T) {
+	f, err := schemas.ManifestFS.Open("kind.json")
+	require.NoError(t, err)
+	finfo, err := f.Stat()
+	require.NoError(t, err)
+	fmt.Printf("GOT: %+vXXXX\n", finfo)
+
+	fmt.Printf("--------\n")
+	fmt.Printf("--------\n")
+	fmt.Printf("--------\n")
 	// Playlist
-	k := kindsys2.Manifest{
+	k := jsks.Manifest{
 		KindInfo: kindsys2.KindInfo{
 			Group:       "ext.playlists.grafana.com",
 			Name:        "Playlist",
@@ -25,16 +37,19 @@ func TestJSONSchema(t *testing.T) {
 		},
 		Versions: []kindsys2.VersionInfo{
 			{
-				Version: "v0-0-alpha",
+				Version:         "v0.0",
+				SoftwareVersion: "v6.0",
 			}, {
-				Version: "v0-1-alpha",
+				Version:         "v0.1",
+				SoftwareVersion: "v9.1",
 				Changelog: []string{
 					"adding the dashboard_by_uid type",
 					"deprecating the dashboard_by_id type",
 					"deprecating the PlaylistItem.title property (now optional and unused)",
 				},
 			}, {
-				Version: "v1-0-alpha",
+				Version:         "v1.0-alpha",
+				SoftwareVersion: "v10.5",
 				Changelog: []string{
 					"removed the dashboard_by_id type",
 					"removed the PlaylistItem.title property",
