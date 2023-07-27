@@ -1,6 +1,7 @@
 package jsks
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -58,9 +59,15 @@ func (m *resourceKindFromManifest) GetMachineNames() kindsys2.MachineNames {
 }
 
 func (m *resourceKindFromManifest) Parse(reader io.Reader) (kindsys2.Resource, error) {
-	obj := &kindsys2.UnstructuredResource{}
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(reader)
+	if err != nil {
+		return nil, err
+	}
 
-	return obj, nil
+	obj := &kindsys2.UnstructuredResource{}
+	err = json.Unmarshal(buf.Bytes(), obj)
+	return obj, err
 }
 
 func (m *resourceKindFromManifest) Validate(obj kindsys2.Resource) error {

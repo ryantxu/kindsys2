@@ -8,7 +8,8 @@ import (
 type Maturity int8
 
 const (
-	MaturityMerged Maturity = iota
+	MaturityUnknown Maturity = iota
+	MaturityMerged
 	MaturityExperimental
 	MaturityStable
 	MaturityMature
@@ -52,6 +53,8 @@ func (s *Maturity) UnmarshalJSON(b []byte) error {
 		*s = MaturityStable
 	case "mature":
 		*s = MaturityMature
+	default:
+		*s = MaturityUnknown
 	}
 	return nil
 }

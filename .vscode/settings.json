@@ -5,13 +5,17 @@
         "filerc",
         "finalizers",
         "finfo",
+        "gochecknoinits",
         "godegen",
         "hasher",
         "jsks",
+        "jsoniter",
         "jsonschema",
         "kindsys",
         "mapcopy",
+        "nolint",
         "subresource",
-        "Subresources"
+        "Subresources",
+        "vals"
     ]
 }

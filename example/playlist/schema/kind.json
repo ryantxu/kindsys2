@@ -9,11 +9,11 @@
   },
   "versions": [
     {
-      "version": "v0.0",
+      "version": "v0-0",
       "software": "v6.0"
     },
     {
-      "version": "v0.1",
+      "version": "v0-1",
       "software": "v9.1",
       "changelog": [
         "adding the dashboard_by_uid type",
@@ -22,7 +22,7 @@
       ]
     },
     {
-      "version": "v1.0-dev",
+      "version": "v1-0-dev",
       "software": "v10.5",
       "changelog": [
         "removed the dashboard_by_id type",

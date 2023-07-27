@@ -1,5 +1,11 @@
 package playlist
 
+//*******************************************************************************************
+// NOTE!!
+// This file is exploring generating the JSONSchema from golang... but that is paused for now
+// The tests are just about the schema for now
+//*******************************************************************************************
+
 // Type of the item.
 type ItemType string
 

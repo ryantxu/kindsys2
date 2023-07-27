@@ -69,8 +69,8 @@ func (m *kindFromManifest) init(sfs fs.FS) (*manifest, error) {
 	if m.info.Kind == "" {
 		return manifest, fmt.Errorf("missing kind name")
 	}
-	if m.info.Maturity == "" {
-		return manifest, fmt.Errorf("missing kind name")
+	if m.info.Maturity <= kindsys2.MaturityUnknown {
+		return manifest, fmt.Errorf("unknown maturity") // ¯\_(ツ)_/¯
 	}
 
 	m.versions = make([]kindsys2.VersionInfo, 0)

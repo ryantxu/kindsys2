@@ -26,6 +26,7 @@ type KindInfo struct {
 
 type VersionInfo struct {
 	// Must be vMajor-Minor-alpha
+	// for k8s... we can't have "." and support aggregation api
 	Version string `json:"version"`
 
 	// The software version when this schema was released.
