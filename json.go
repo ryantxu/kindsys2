@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -28,9 +29,7 @@ func ReadResourceJSON(reader io.Reader, builder JSONResourceBuilder) error {
 		err := iter.Error
 		switch l1Field {
 		case "apiVersion":
-			vals := strings.SplitN(iter.ReadString(), "/", 2)
-			static.Group = vals[0]
-			static.Version = vals[1]
+			err = static.setGroupVersionFromAPI(iter.ReadString())
 
 		case "kind":
 			static.Kind = iter.ReadString()
@@ -42,12 +41,79 @@ func ReadResourceJSON(reader io.Reader, builder JSONResourceBuilder) error {
 					static.Namespace = iter.ReadString()
 				case "name":
 					static.Name = iter.ReadString()
+				case "resourceVersion":
+					common.ResourceVersion = iter.ReadString()
+				case "uid":
+					common.UID = iter.ReadString()
+				case "creationTimestamp":
+					t, err := time.Parse(time.RFC3339, iter.ReadString())
+					if err != nil {
+						return fmt.Errorf("invalid updatedTimestamp format // %w", err)
+					}
+					common.CreationTimestamp = t
 				case "annotations":
 					for anno := iter.ReadObject(); anno != ""; anno = iter.ReadObject() {
 						val := iter.ReadString()
-						switch anno {
-						default:
-							fmt.Printf("anno> %s = %v\n", anno, val)
+
+						i := strings.Index(anno, "/")
+						if i > 0 {
+							g := anno[:i]
+							v := anno[i+1:]
+
+							if g == "grafana.com" {
+								switch v {
+								case "createdBy":
+									common.CreatedBy = val
+								case "updatedBy":
+									common.UpdatedBy = val
+								case "creationTimestamp":
+									t, err := time.Parse(time.RFC3339, val)
+									if err != nil {
+										return fmt.Errorf("invalid creationTimestamp format // %w", err)
+									}
+									common.CreationTimestamp = t
+								case "updatedTimestamp":
+									t, err := time.Parse(time.RFC3339, val)
+									if err != nil {
+										return fmt.Errorf("invalid updatedTimestamp format // %w", err)
+									}
+									common.UpdateTimestamp = t
+								case "origin.name":
+									if common.Origin == nil {
+										common.Origin = &ResourceOriginInfo{}
+									}
+									common.Origin.Name = val
+								case "origin.path":
+									if common.Origin == nil {
+										common.Origin = &ResourceOriginInfo{}
+									}
+									common.Origin.Path = val
+								case "origin.key":
+									if common.Origin == nil {
+										common.Origin = &ResourceOriginInfo{}
+									}
+									common.Origin.Key = val
+								case "origin.timestamp":
+									if common.Origin == nil {
+										common.Origin = &ResourceOriginInfo{}
+									}
+									t, err := time.Parse(time.RFC3339, val)
+									if err != nil {
+										return fmt.Errorf("invalid updatedTimestamp format // %w", err)
+									}
+									common.Origin.Timestamp = &t
+								default:
+									fmt.Printf("grafana anno> %s = %v\n", g, v)
+								}
+							} else {
+								fmt.Printf("anno ???> %s = %v\n", anno, val)
+							}
+
+						} else {
+							switch anno {
+							default:
+								fmt.Printf("anno> %s = %v\n", anno, val)
+							}
 						}
 						if iter.Error != nil {
 							return iter.Error
@@ -81,16 +147,15 @@ func ReadResourceJSON(reader io.Reader, builder JSONResourceBuilder) error {
 	return iter.Error
 }
 
-func WriteResourceJSON(obj Resource, stream *jsoniter.Stream) {
+func WriteResourceJSON(obj Resource, stream *jsoniter.Stream) error {
 	isMore := false
 	static := obj.StaticMetadata()
 	common := obj.CommonMetadata()
 	custom := obj.CustomMetadata() // ends up in annotations
-	spec := obj.SpecObject()
 
 	stream.WriteObjectStart()
 	stream.WriteObjectField("apiVersion")
-	stream.WriteString(static.Group + "/" + static.Version)
+	stream.WriteString(static.GetAPIVersion())
 	stream.WriteMore()
 	stream.WriteObjectField("kind")
 	stream.WriteString(static.Kind)
@@ -106,8 +171,23 @@ func WriteResourceJSON(obj Resource, stream *jsoniter.Stream) {
 	}
 	stream.WriteObjectField("annotations")
 	stream.WriteObjectStart()
-	isMore = writeOptionalString(false, "grafana.com/createdBy", common.CreatedBy, stream)
 
+	prefix := "grafana.com/"
+	isMore = writeOptionalString(false, prefix+"createdBy", common.CreatedBy, stream)
+	isMore = writeOptionalString(isMore, prefix+"updatedBy", common.UpdatedBy, stream)
+
+	origin := common.Origin
+	if origin != nil && origin.Key != "" {
+		isMore = writeOptionalString(isMore, prefix+"origin.name", origin.Name, stream)
+		isMore = writeOptionalString(isMore, prefix+"origin.path", origin.Path, stream)
+		isMore = writeOptionalString(isMore, prefix+"origin.key", origin.Key, stream)
+		isMore = writeOptionalTime(isMore, prefix+"origin.timestamp", origin.Timestamp, stream)
+	}
+	if stream.Error != nil {
+		return stream.Error
+	}
+
+	// Currently added directly to the annotations
 	if custom != nil {
 		for k, v := range custom.MapFields() {
 			if isMore {
@@ -117,10 +197,17 @@ func WriteResourceJSON(obj Resource, stream *jsoniter.Stream) {
 			stream.WriteVal(v)
 			isMore = true
 		}
+		if stream.Error != nil {
+			return stream.Error
+		}
 	}
 
-	stream.WriteObjectEnd()
-	isMore = writeOptionalString(false, "resourceVersion", common.ResourceVersion, stream)
+	_ = writeOptionalTime(isMore, prefix+"updatedTimestamp", &common.UpdateTimestamp, stream)
+	stream.WriteObjectEnd() // annotations
+
+	isMore = writeOptionalTime(true, "creationTimestamp", &common.CreationTimestamp, stream)
+	isMore = writeOptionalTime(isMore, "deletionTimestamp", common.DeletionTimestamp, stream)
+	isMore = writeOptionalString(isMore, "resourceVersion", common.ResourceVersion, stream)
 	if len(common.Labels) > 0 {
 		if isMore {
 			stream.WriteMore()
@@ -132,13 +219,29 @@ func WriteResourceJSON(obj Resource, stream *jsoniter.Stream) {
 	_ = writeOptionalString(isMore, "uid", common.UID, stream)
 	stream.WriteObjectEnd()
 
+	// SPEC
+	spec := obj.SpecObject()
 	if spec != nil {
 		stream.WriteMore()
 		stream.WriteObjectField("spec")
 		stream.WriteVal(spec)
+		if stream.Error != nil {
+			return stream.Error
+		}
+	}
+
+	// This will get status etc
+	for k, v := range obj.Subresources() {
+		if v != nil {
+			stream.WriteMore()
+			stream.WriteObjectField(k)
+			stream.WriteVal(v)
+		}
 	}
 
 	stream.WriteObjectEnd()
+	// fmt.Printf("XXX:\n\n\n%s\n\n\n", string(stream.Buffer()))
+	return stream.Error
 }
 
 func writeOptionalString(isMore bool, key string, val string, stream *jsoniter.Stream) bool {
@@ -151,4 +254,20 @@ func writeOptionalString(isMore bool, key string, val string, stream *jsoniter.S
 	stream.WriteObjectField(key)
 	stream.WriteString(val)
 	return true
+}
+
+func writeOptionalTime(isMore bool, key string, val *time.Time, stream *jsoniter.Stream) bool {
+	if val == nil {
+		return isMore
+	}
+	if isMore {
+		stream.WriteMore()
+	}
+	stream.WriteObjectField(key)
+	stream.WriteString(val.Format(time.RFC3339))
+	return true
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

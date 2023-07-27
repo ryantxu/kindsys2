@@ -20,8 +20,6 @@ type KindInfo struct {
 
 	// Indicate where this kind is in the dev cycle
 	Maturity Maturity `json:"maturity"`
-
-	// ??? indicate resource | composable ???
 }
 
 type VersionInfo struct {

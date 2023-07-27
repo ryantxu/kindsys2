@@ -40,23 +40,20 @@ func (u *GenericResource[Spec, CustomMeta, Status]) Copy() Resource {
 	return dst
 }
 
-// UnmarshalJSON allows unmarshalling Frame from JSON.
-func (u *GenericResource[Spec, CustomMeta, Status]) UnmarshalJSON(b []byte) error {
-	//iter := jsoniter.ParseBytes(jsoniter.ConfigDefault, b)
-	return nil //readResourceJSON(u, iter)
-}
-
 // MarshalJSON marshals Frame to JSON.
+// NOTE: we can not do generic unmarshal because we need functions to create the typed objects
 func (u *GenericResource[Spec, CustomMeta, Status]) MarshalJSON() ([]byte, error) {
 	cfg := jsoniter.ConfigCompatibleWithStandardLibrary
 	stream := cfg.BorrowStream(nil)
 	defer cfg.ReturnStream(stream)
 
-	WriteResourceJSON(u, stream)
-	if stream.Error != nil {
-		return nil, stream.Error
+	err := WriteResourceJSON(u, stream)
+	if err != nil {
+		return nil, err
 	}
-
+	if stream.Error != nil {
+		return nil, err
+	}
 	return append([]byte(nil), stream.Buffer()...), nil
 }
 

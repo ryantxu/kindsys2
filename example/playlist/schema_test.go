@@ -25,6 +25,8 @@ func TestPlaylistKind(t *testing.T) {
 
 	obj, err := k.Read(bytes.NewReader(raw), true)
 	require.NoError(t, err)
+	common := obj.CommonMetadata()
+	require.Equal(t, "ryan", common.CreatedBy)
 
 	// Expect the same value after writing it out
 	out, err := json.MarshalIndent(obj, "", "  ")
