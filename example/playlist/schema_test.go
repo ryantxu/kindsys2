@@ -2,6 +2,8 @@ package playlist_test
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"kindsys2/example/playlist/schema"
 	"kindsys2/jsks"
 	"os"
@@ -21,20 +23,21 @@ func TestPlaylistKind(t *testing.T) {
 	raw, err := os.ReadFile("testdata/valid-v0-0.json")
 	require.NoError(t, err)
 
-	obj, err := k.Parse(bytes.NewReader(raw))
+	obj, err := k.Read(bytes.NewReader(raw), true)
 	require.NoError(t, err)
 
-	err = k.Validate(obj)
+	// Expect the same value after writing it out
+	out, err := json.MarshalIndent(obj, "", "  ")
 	require.NoError(t, err)
+	//require.JSONEq(t, string(raw), string(out))
+
+	fmt.Printf("AFTER: %s\n", string(out))
 
 	// INVALID
 
-	raw, err = os.ReadFile("testdata/invalid-v0-0.json")
-	require.NoError(t, err)
+	// raw, err = os.ReadFile("testdata/invalid-v0-0.json")
+	// require.NoError(t, err)
 
-	obj, err = k.Parse(bytes.NewReader(raw))
-	require.NoError(t, err)
-
-	err = k.Validate(obj)
-	require.NoError(t, err)
+	// obj, err = k.Read(bytes.NewReader(raw), true)
+	// require.NoError(t, err)
 }

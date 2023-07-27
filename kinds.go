@@ -78,14 +78,9 @@ type ResourceKind interface {
 	// K8S style machine names for this kind
 	GetMachineNames() MachineNames
 
-	// Create a resource from an input stream.  This may error if the input
-	// can not be converted into a resource, Successful parsing is not an indication
-	// that validation has passed (only that it is close enough to read into a resource object)
-	Parse(reader io.Reader) (Resource, error)
-
-	// Check that a given instance is valid
-	// note the resource self identifies the version
-	Validate(obj Resource) error
+	// Read data into a Resource, when strict is true, full validation will happen
+	// otherwise it will mostly check that we can construct a reasonably shaped resource
+	Read(reader io.Reader, strict bool) (Resource, error)
 
 	// Migrate from one object to another version
 	Migrate(obj Resource, targetVersion string) (Resource, error)

@@ -1,0 +1,123 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Generated schema for Root",
+    "$comment": "NOTE!!! this is invalid right now... but something",
+    "type": "object",
+    "properties": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "refId": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "typeVersion": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "custom": {
+                "type": "object"
+              },
+              "stats": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "channel": {
+                "type": "string"
+              },
+              "executedQueryString": {
+                "type": "string"
+              }
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "typeInfo": {
+                  "type": "object"
+                },
+                "labels": {
+                  "type": "object"
+                },
+                "config": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "required": []
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "NaN": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "Inf": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "NegInf": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "nanos": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "required": [
+          "values"
+        ]
+      }
+    },
+    "required": [
+      "schema",
+      "data"
+    ]
+  }

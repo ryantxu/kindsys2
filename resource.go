@@ -64,6 +64,7 @@ type CustomMetadata interface {
 	// MapFields converts the custom metadata's fields into a map of field key to value.
 	// This is used so Clients don't need to engage in reflection for marshaling metadata,
 	// as various implementations may not store kind-specific metadata the same way.
+	// TODO??? should this be map[string]string... since it needs to land in annotations?
 	MapFields() map[string]any
 }
 
@@ -104,7 +105,7 @@ type CommonMetadata struct {
 	// Any time the object changes in storage, the ResourceVersion will be changed.
 	// This can be used to block updates if a change has been made to the object between when the object was
 	// retrieved, and when the update was applied.
-	ResourceVersion string `json:"resourceVersion"`
+	ResourceVersion string `json:"resourceVersion,omitempty"`
 	// Labels are string key/value pairs attached to the object. They can be used for filtering,
 	// or as additional metadata.
 	Labels map[string]string `json:"labels"`
@@ -127,12 +128,34 @@ type CommonMetadata struct {
 	// UpdatedBy is a string which indicates the user or process which last updated the resource.
 	// Implementations may choose what this indicator should be.
 	UpdatedBy string `json:"updatedBy"`
+	// Describe where the resource came from
+	Origin *ResourceOriginInfo `json:"origin"`
 
 	// ExtraFields stores implementation-specific metadata.
 	// Not all Client implementations are required to honor all ExtraFields keys.
 	// Generally, this field should be shied away from unless you know the specific
 	// Client implementation you're working with and wish to track or mutate extra information.
 	ExtraFields map[string]any `json:"extraFields"`
+}
+
+// ResourceOriginInfo is saved in annotations.  This is used to identify where the resource came from
+// This object can model the same data as our existing provisioning table or a more general git sync
+type ResourceOriginInfo struct {
+	// Name of the origin/provisioning source
+	Name string `json:"name,omitempty"`
+
+	// The path within the named origin above (external_id in the existing dashboard provisioning)
+	Path string `json:"path,omitempty"`
+
+	// Verification/identification key (check_sum in existing dashboard provisioning)
+	Key string `json:"key,omitempty"`
+
+	// Origin modification timestamp when the resource was saved
+	// This will be before the resource updated time
+	Timestamp *time.Time `json:"time,omitempty"`
+
+	// Avoid extending
+	_ interface{}
 }
 
 // TODO guard against skew, use indirection through an internal package
@@ -144,38 +167,4 @@ type SimpleCustomMetadata map[string]any
 // MapFields returns a map of string->value for all CustomMetadata fields
 func (s SimpleCustomMetadata) MapFields() map[string]any {
 	return s
-}
-
-// BasicMetadataObject is a composable base struct to attach Metadata, and its associated functions, to another struct.
-// BasicMetadataObject provides a Metadata field composed of StaticMetadata and ObjectMetadata, as well as the
-// ObjectMetadata(),SetObjectMetadata(), StaticMetadata(), and SetStaticMetadata() receiver functions.
-type BasicMetadataObject struct {
-	StaticMeta StaticMetadata       `json:"staticMetadata"`
-	CommonMeta CommonMetadata       `json:"commonMetadata"`
-	CustomMeta SimpleCustomMetadata `json:"customMetadata"`
-}
-
-// CommonMetadata returns the object's CommonMetadata
-func (b *BasicMetadataObject) CommonMetadata() CommonMetadata {
-	return b.CommonMeta
-}
-
-// SetCommonMetadata overwrites the ObjectMetadata.Common() supplied by BasicMetadataObject.ObjectMetadata()
-func (b *BasicMetadataObject) SetCommonMetadata(m CommonMetadata) {
-	b.CommonMeta = m
-}
-
-// StaticMetadata returns the object's StaticMetadata
-func (b *BasicMetadataObject) StaticMetadata() StaticMetadata {
-	return b.StaticMeta
-}
-
-// SetStaticMetadata overwrites the StaticMetadata supplied by BasicMetadataObject.StaticMetadata()
-func (b *BasicMetadataObject) SetStaticMetadata(m StaticMetadata) {
-	b.StaticMeta = m
-}
-
-// CustomMetadata returns the object's CustomMetadata
-func (b *BasicMetadataObject) CustomMetadata() CustomMetadata {
-	return b.CustomMeta
 }

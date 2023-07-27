@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -15,6 +16,9 @@ func TestUnstructuredJSON(t *testing.T) {
 	simple.StaticMeta.Kind = "Example"
 	simple.StaticMeta.Name = "test"
 	simple.StaticMeta.Namespace = "default"
+	simple.CommonMeta.CreatedBy = "ryan"
+	simple.CommonMeta.CreationTimestamp = time.Date(2020, time.January, 21, 1, 10, 30, 0, time.UTC)
+	simple.CommonMeta.UpdateTimestamp = time.Date(2022, time.January, 21, 1, 10, 30, 0, time.UTC)
 	simple.Spec = map[string]any{
 		"hello":  "world",
 		"number": 1.234,
@@ -27,7 +31,13 @@ func TestUnstructuredJSON(t *testing.T) {
 	require.JSONEq(t, `{
 		"apiVersion": "ext.something.grafana.com/v1-1",
 		"kind": "Example",
-		"metadata": {},
+		"metadata": {
+		  "name": "test",
+		  "namespace": "default",
+		  "annotations": {
+			"grafana.com/createdBy": "ryan"
+		  }
+		},
 		"spec": {
 		  "hello": "world",
 		  "int": 25,

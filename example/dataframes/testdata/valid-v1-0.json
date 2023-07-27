@@ -1,0 +1,68 @@
+{
+  "apiVersion": "ext.dataframes.grafana.com/v1-0",
+  "kind": "DataFrames",
+  "metadata": {
+    "annotations": {
+      "grafana.com/createdBy": "user:1:",
+      "grafana.com/updatedBy": "user:1:",
+      "grafana.com/updatedTimestamp": "2023-07-26T15:54:16-07:00"
+    },
+    "creationTimestamp": "2023-07-26T22:54:16Z",
+    "name": "ba2eea3b-d42c-4893-b522-6bf3b67efdc5",
+    "namespace": "default",
+    "resourceVersion": "123456",
+    "uid": "63396a47-eed8-46c3-859a-5dbac7c2b241"
+  },
+  "spec": [
+    {
+      "schema": {
+        "meta": {
+          "type": "timeseries-wide",
+          "typeVersion": [0, 1],
+          "custom": {
+            "exampleInfo": {
+              "summary": "TimeseriesWide with 1 item and a remainder time field. There is 1 item name (slothCount) and 1 dimension (city).",
+              "itemCount": 1,
+              "collectionVersion": 1,
+              "valid": true,
+              "noData": false
+            }
+          }
+        },
+        "fields": [
+          {
+            "name": "t",
+            "type": "time",
+            "typeInfo": {
+              "frame": "time.Time"
+            }
+          },
+          {
+            "type": "number",
+            "name": "slothCount",
+            "typeInfo": {
+              "frame": "float64"
+            },
+            "labels": {
+              "city": "LGA"
+            }
+          },
+          {
+            "name": "remainder time field",
+            "type": "time",
+            "typeInfo": {
+              "frame": "time.Time"
+            }
+          }
+        ]
+      },
+      "data": {
+        "values": [
+          [1664901845976, 1664902845976],
+          [3, 5],
+          [1764901845976, 1764902845976]
+        ]
+      }
+    }
+  ]
+}

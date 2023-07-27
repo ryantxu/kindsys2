@@ -1,13 +1,14 @@
 package jsks
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
 	"kindsys2"
 	"strings"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 var _ kindsys2.ResourceKind = &resourceKindFromManifest{}
@@ -58,36 +59,52 @@ func (m *resourceKindFromManifest) GetMachineNames() kindsys2.MachineNames {
 	return m.names
 }
 
-func (m *resourceKindFromManifest) Parse(reader io.Reader) (kindsys2.Resource, error) {
-	buf := new(bytes.Buffer)
-	_, err := buf.ReadFrom(reader)
-	if err != nil {
-		return nil, err
-	}
-
+func (m *resourceKindFromManifest) Read(reader io.Reader, strict bool) (kindsys2.Resource, error) {
 	obj := &kindsys2.UnstructuredResource{}
-	err = json.Unmarshal(buf.Bytes(), obj)
+	err := kindsys2.ReadResourceJSON(reader, kindsys2.JSONResourceBuilder{
+		SetStaticMetadata: func(v kindsys2.StaticMetadata) { obj.StaticMeta = v },
+		SetCommonMetadata: func(v kindsys2.CommonMetadata) { obj.CommonMeta = v },
+		ReadSpec: func(iter *jsoniter.Iterator) error {
+			obj.Spec = make(map[string]any)
+			iter.ReadVal(&obj.Spec)
+			return iter.Error
+		},
+		SetAnnotation: func(key, val string) {
+			fmt.Printf("??? unknown")
+		},
+		ReadStatus: func(iter *jsoniter.Iterator) error {
+			obj.Status = make(map[string]any)
+			iter.ReadVal(&obj.Status)
+			return iter.Error
+		},
+		ReadSub: func(name string, iter *jsoniter.Iterator) error {
+			return fmt.Errorf("unsupported sub resource")
+		},
+	})
+	if err != nil {
+		return obj, err
+	}
+
+	if strict {
+		meta := obj.StaticMetadata()
+		if meta.Group != m.info.Group {
+			return obj, fmt.Errorf("wrong group")
+		}
+		if meta.Kind != m.info.Kind {
+			return obj, fmt.Errorf("wrong kind")
+		}
+
+		schema, ok := m.parsed[meta.Version]
+		if !ok || schema == nil {
+			return obj, fmt.Errorf("unknown version")
+		}
+
+		// TODO!!! schema is right now just on the spec!!!
+		doc := obj.SpecObject()
+		// TODO: need to make sure the doc+resource are ones that we can parse ()
+		err = schema.ValidateInterface(doc)
+	}
 	return obj, err
-}
-
-func (m *resourceKindFromManifest) Validate(obj kindsys2.Resource) error {
-	meta := obj.StaticMetadata()
-	if meta.Group != m.info.Group {
-		return fmt.Errorf("wrong group")
-	}
-	if meta.Kind != m.info.Kind {
-		return fmt.Errorf("wrong kind")
-	}
-
-	schema, ok := m.parsed[meta.Version]
-	if !ok || schema == nil {
-		return fmt.Errorf("unknown version")
-	}
-
-	// TODO!!! schema is right now just on the spec!!!
-	doc := obj.SpecObject()
-	// TODO: need to make sure the doc+resource are ones that we can parse ()
-	return schema.ValidateInterface(doc)
 }
 
 func (m *resourceKindFromManifest) Migrate(obj kindsys2.Resource, targetVersion string) (kindsys2.Resource, error) {
