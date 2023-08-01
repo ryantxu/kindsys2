@@ -76,8 +76,8 @@ type ResourceKind interface {
 	// K8S style machine names for this kind
 	GetMachineNames() MachineNames
 
-	// Read data into a Resource, when strict is true, full validation will happen
-	// otherwise it will mostly check that we can construct a reasonably shaped resource
+	// Read data into a Resource, when strict is true, all validation rules will be checked
+	// otherwise a resource will be created if possible, but all validation may not have been run
 	Read(reader io.Reader, strict bool) (Resource, error)
 
 	// Migrate from one object to another version
