@@ -160,6 +160,7 @@ type CommonMetadata struct {
 	Origin *ResourceOriginInfo `json:"origin"`
 
 	// ExtraFields stores implementation-specific metadata.
+	// This is where the more esoteric k8s metadata will land
 	// Not all Client implementations are required to honor all ExtraFields keys.
 	// Generally, this field should be shied away from unless you know the specific
 	// Client implementation you're working with and wish to track or mutate extra information.

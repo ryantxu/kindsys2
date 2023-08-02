@@ -24,6 +24,21 @@ func TestUnstructuredJSON(t *testing.T) {
 		Key:       "hash",
 		Timestamp: ptr(time.Date(2020, time.January, 1, 1, 10, 30, 0, time.UTC)),
 	}
+	simple.CommonMeta.Finalizers = []string{"a", "b", "c"}
+	simple.CommonMeta.ExtraFields = map[string]any{
+		"xxx": 12.3, // unknown meta fields
+	}
+
+	// "deletionGracePeriodSeconds": 30,
+	// "annotations": {
+	//   "grafana.com/tags": "a,b,c-d",
+	//   "grafana.com/title": "A title here"
+	// },
+	// "finalizers": [
+	//   "a",
+	//   "b",
+	//   "c"
+	// ],
 	simple.CommonMeta.CreationTimestamp = time.Date(2020, time.January, 21, 1, 10, 30, 0, time.UTC)
 	simple.CommonMeta.UpdateTimestamp = time.Date(2022, time.January, 21, 1, 10, 30, 0, time.UTC)
 	simple.Spec = map[string]any{
@@ -53,7 +68,13 @@ func TestUnstructuredJSON(t *testing.T) {
 			"grafana.com/origin.timestamp": "2020-01-01T01:10:30Z",
 			"grafana.com/updatedTimestamp": "2022-01-21T01:10:30Z"
 		  },
-		  "creationTimestamp": "2020-01-21T01:10:30Z"
+		  "creationTimestamp": "2020-01-21T01:10:30Z",
+		  "finalizers": [
+			"a",
+			"b",
+			"c"
+		  ],
+		  "xxx": 12.3
 		},
 		"spec": {
 		  "hello": "world",
@@ -72,6 +93,6 @@ func TestUnstructuredJSON(t *testing.T) {
 	after, err := json.MarshalIndent(copy, "", "  ")
 	require.NoError(t, err)
 
-	//fmt.Printf("\nAFTER:\n\n%s\n", string(after))
+	//	fmt.Printf("\nAFTER:\n\n%s\n", string(after))
 	require.JSONEq(t, string(out), string(after))
 }

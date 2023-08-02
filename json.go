@@ -51,6 +51,12 @@ func ReadResourceJSON(reader io.Reader, builder JSONResourceBuilder) error {
 						return fmt.Errorf("invalid updatedTimestamp format // %w", err)
 					}
 					common.CreationTimestamp = t
+				case "finalizers":
+					common.Finalizers = make([]string, 0)
+					for iter.ReadArray() {
+						common.Finalizers = append(common.Finalizers, iter.ReadString())
+					}
+
 				case "annotations":
 					for anno := iter.ReadObject(); anno != ""; anno = iter.ReadObject() {
 						val := iter.ReadString()
@@ -122,6 +128,10 @@ func ReadResourceJSON(reader io.Reader, builder JSONResourceBuilder) error {
 				default:
 					tt := iter.ReadAny()
 					fmt.Printf("meta> %s = %v\n", l2Field, tt)
+					if common.ExtraFields == nil {
+						common.ExtraFields = make(map[string]any)
+					}
+					common.ExtraFields[l2Field] = tt
 				}
 				if iter.Error != nil {
 					return iter.Error
@@ -216,7 +226,36 @@ func WriteResourceJSON(obj Resource, stream *jsoniter.Stream) error {
 		stream.WriteVal(common.Labels)
 		isMore = true
 	}
-	_ = writeOptionalString(isMore, "uid", common.UID, stream)
+	if len(common.Finalizers) > 0 {
+		if isMore {
+			stream.WriteMore()
+		}
+		stream.WriteObjectField("finalizers")
+		stream.WriteArrayStart()
+		for i, v := range common.Finalizers {
+			if i > 0 {
+				stream.WriteMore()
+			}
+			stream.WriteVal(v)
+		}
+		stream.WriteArrayEnd()
+		isMore = true
+	}
+	isMore = writeOptionalString(isMore, "uid", common.UID, stream)
+
+	// Additional k8s fields
+	if common.ExtraFields != nil {
+		for k, v := range common.ExtraFields {
+			if isMore {
+				stream.WriteMore()
+			}
+			stream.WriteObjectField(k)
+			stream.WriteVal(v)
+			isMore = true
+		}
+	}
+
+	// End the metadata section
 	stream.WriteObjectEnd()
 
 	// SPEC
