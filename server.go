@@ -5,9 +5,9 @@ import (
 	"io"
 )
 
-// Concrete GRD implementation
+// Alternative "Grafana Resource Definition" hook
 // An api server will be created with support for the kind and the various
-type KindServiceHooks struct {
+type APIServiceHooks struct {
 	// This defines the apiVersion + Kind
 	Kind ResourceKind
 
@@ -33,7 +33,8 @@ type KindServiceHooks struct {
 type ResourceGetter = func(ctx context.Context, id StaticMetadata) (Resource, error)
 
 // This is used to answer raw API requests like /logs
-type StreamingResponse = func(ctx context.Context, apiVersion, acceptHeader string) (stream io.ReadCloser, flush bool, mimeType string, err error)
+type StreamingResponse = func(ctx context.Context, apiVersion, acceptHeader string) (
+	stream io.ReadCloser, flush bool, mimeType string, err error)
 
 // This is used to implement dynamic sub-resources like pods/x/logs
 type RawAPIHandler struct {
