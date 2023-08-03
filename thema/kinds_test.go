@@ -49,8 +49,10 @@ lineage: schemas: [{
 	def, err := kindsys.ToDef[kindsys.CoreProperties](cv)
 	require.NoError(t, err)
 
-	k, err := NewThemaResourceKind(rt, def)
+	k, err := NewThemaCoreKind(rt, def)
 	require.NoError(t, err)
+	require.Equal(t, "TestKind", k.GetKindInfo().Kind)
+	require.Equal(t, "Blammo!", k.GetKindInfo().Description)
 
 	res, err := k.Read(bytes.NewReader([]byte(testresource)), true)
 	require.NoError(t, err)
