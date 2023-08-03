@@ -17,12 +17,12 @@ type APIServiceHooks struct {
 
 	// Called before updating a resource  (admission controller)
 	// this can error or mutate
-	BeforeUpdate func(ctx context.Context, oldObj Resource, newObj Resource) (Resource, error)
+	BeforeUpdate func(ctx context.Context, newObj Resource, oldObj Resource) (Resource, error)
 
 	// Called before deleting a resource
 	// this can error
-	// ??? is this necessary
-	BeforeDelete func(ctx context.Context, obj Resource) error
+	// ??? is this necessary -- finalizers seem like the real thing
+	// BeforeDelete func(ctx context.Context, obj Resource) error
 
 	// This is called when initialized -- the endpoints will be added to the api server
 	// the OpenAPI specs will be exposed in the public API
