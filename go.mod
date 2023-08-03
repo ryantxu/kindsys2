@@ -3,17 +3,17 @@ module kindsys2
 go 1.20
 
 require (
+	cuelang.org/go v0.5.0
 	github.com/grafana/grafana-plugin-sdk-go v0.171.0
 	github.com/grafana/kindsys v0.0.0-20230802133549-74f2bc812610
 	github.com/grafana/thema v0.0.0-20230801151112-711d7fd5162f
 	github.com/invopop/jsonschema v0.7.0
 	github.com/json-iterator/go v1.1.12
 	github.com/santhosh-tekuri/jsonschema v1.2.4
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 )
 
 require (
-	cuelang.org/go v0.5.0 // indirect
 	github.com/apache/arrow/go/arrow v0.0.0-20211112161151-bc219186db40 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/cockroachdb/apd/v2 v2.0.2 // indirect
