@@ -2,6 +2,9 @@ package kindsys2
 
 import "context"
 
+// Actually:
+// https://github.com/grafana/grafana-app-sdk/blob/main/resource/client.go#L122
+
 // This is the k8s client
 type ResourceClient interface {
 	Get(ctx context.Context, id StaticMetadata) (Resource, error)

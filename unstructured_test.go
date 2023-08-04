@@ -26,7 +26,7 @@ func TestUnstructuredJSON(t *testing.T) {
 	}
 	simple.CommonMeta.Finalizers = []string{"a", "b", "c"}
 	simple.CommonMeta.ExtraFields = map[string]any{
-		"xxx": 12.3, // unknown meta fields
+		"deletionGracePeriodSeconds": 30, // unknown meta fields
 	}
 
 	// "deletionGracePeriodSeconds": 30,
@@ -74,7 +74,7 @@ func TestUnstructuredJSON(t *testing.T) {
 			"b",
 			"c"
 		  ],
-		  "xxx": 12.3
+		  "deletionGracePeriodSeconds": 30
 		},
 		"spec": {
 		  "hello": "world",
